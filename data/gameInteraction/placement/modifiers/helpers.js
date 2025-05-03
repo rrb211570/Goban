@@ -12,7 +12,7 @@ let getAllNeighborIndices = (rootIndices) => {
 }
 
 let getNeighborStones = (rootIndices) => {
-    let placedStones = store.getState().gamePlay.placedStones;
+    let placedStones = gobanStore.getState().gamePlay.placedStones;
     let [x, y] = /^(\d+).*(\d+)$/.exec(rootIndices).slice(1, 3).map((val) => parseInt(val, 10));
     let neighborStones = [];
     if (x + 1 < 9 && placedStones.includes((x + 1) + '_' + y)) neighborStones.push((x + 1) + '_' + y);
@@ -23,15 +23,15 @@ let getNeighborStones = (rootIndices) => {
 }
 
 let makeNewStoneGroup = (indices) => {
-    let stoneGroups = store.getState().gamePlay.stoneGroups;
+    let stoneGroups = gobanStore.getState().gamePlay.stoneGroups;
     let newGroupNumber = Math.max(...stoneGroups.getStoneGroupKeys()) + 1;
     if (newGroupNumber == -Infinity) newGroupNumber = 1;
     stoneGroups.setStoneGroup(newGroupNumber, [indices]);
-    store.dispatch(updateStoneGroups({ stoneGroups }));
+    gobanStore.dispatch(updateStoneGroups({ stoneGroups }));
 }
 
 let getNeighborGroups = (rootIndices)=>{
-    let stoneGroups = store.getState().gamePlay.stoneGroups;
+    let stoneGroups = gobanStore.getState().gamePlay.stoneGroups;
     let neighborGroups = [];
     for (let neighborIndices of getAllNeighborIndices(rootIndices)) {
         for (let [stoneGroupNumber, stones] of stoneGroups.getStoneGroupEntries()) {
@@ -42,12 +42,12 @@ let getNeighborGroups = (rootIndices)=>{
 }
 
 let getSameColorNeighborGroups = (rootIndices) => {
-    let stoneGroups = store.getState().gamePlay.stoneGroups;
+    let stoneGroups = gobanStore.getState().gamePlay.stoneGroups;
     return getNeighborGroups(rootIndices).filter((group) => sameColorAsTurn(stoneGroups.getStones(group)[0]));
 }
 
 let sameColorAsTurn = (stoneID) => {
-    let turn = store.getState().gamePlay.turn;
+    let turn = gobanStore.getState().gamePlay.turn;
     let color = document.querySelector('#clickSquare_' + stoneID + ' use').getAttribute('href');
     console.log(color + '-----' + turn);
     if (color == '#plain-black-14.5-3' && turn == 'black') return true;
@@ -56,7 +56,7 @@ let sameColorAsTurn = (stoneID) => {
 }
 
 let getStoneGroupFromStone = (indices) => {
-    let stoneGroups = store.getState().gamePlay.stoneGroups;
+    let stoneGroups = gobanStore.getState().gamePlay.stoneGroups;
     for (let [groupNumber, stoneArr] of stoneGroups.getStoneGroupEntries()) {
       if (stoneArr.includes(indices)) return groupNumber;
     }

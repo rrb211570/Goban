@@ -3,7 +3,7 @@ import { deleteStoneGroup, deletePlacedStone, updateAdj } from "../../../../stor
 import { getNeighborStones, getStoneGroupFromStone } from "./helpers";
 
 let capturable = (capturingStoneIndices) => {
-  let stoneGroups = store.getState().gamePlay.stoneGroups;
+  let stoneGroups = gobanStore.getState().gamePlay.stoneGroups;
   let orphanedStoneGroupNumbers = getOrphanedStoneGroupNumber(capturingStoneIndices);
   if (orphanedStoneGroupNumbers.length > 0) { // has one or more group (to be captured)
     for (let orphanedStoneGroupNumber of orphanedStoneGroupNumbers) {
@@ -11,7 +11,7 @@ let capturable = (capturingStoneIndices) => {
       console.log(deadStones);
       deleteDeadStonesFromStoneGroupsAndPlacedStones(orphanedStoneGroupNumber, deadStones);
       console.log(stoneGroups);
-      console.log(store.getState().gamePlay.placedStones);
+      console.log(gobanStore.getState().gamePlay.placedStones);
       replaceDeadStonesWithAdj(deadStones, capturingStoneIndices);
     }
     return true;
@@ -21,8 +21,8 @@ let capturable = (capturingStoneIndices) => {
 
 // 
 let getOrphanedStoneGroupNumber = (capturingStoneIndices) => {
-  let adjMap = store.getState().gamePlay.adjMap;
-  let stoneGroupNumbers = [...store.getState().gamePlay.stoneGroups.getStoneGroupKeys()];
+  let adjMap = gobanStore.getState().gamePlay.adjMap;
+  let stoneGroupNumbers = [...gobanStore.getState().gamePlay.stoneGroups.getStoneGroupKeys()];
   let orphanedStoneGroupNumbers = [];
   for (let stoneGroupNumber of stoneGroupNumbers) {
     let totalExposedAdj = 0;
@@ -36,8 +36,8 @@ let getOrphanedStoneGroupNumber = (capturingStoneIndices) => {
 }
 
 let sameColorGroupAsTurn = (stoneGroupNumber) => {
-  let stoneIDFromGroup = store.getState().gamePlay.stoneGroups.getStones(stoneGroupNumber)[0];
-  let turn = store.getState().gamePlay.turn;
+  let stoneIDFromGroup = gobanStore.getState().gamePlay.stoneGroups.getStones(stoneGroupNumber)[0];
+  let turn = gobanStore.getState().gamePlay.turn;
   let color = document.querySelector('#clickSquare_' + stoneIDFromGroup + ' use').getAttribute('href');
   console.log(color + '-----' + turn);
   if (color == '#plain-black-14.5-3' && turn == 'black') return true;
@@ -46,12 +46,12 @@ let sameColorGroupAsTurn = (stoneGroupNumber) => {
 }
 
 let deleteDeadStonesFromStoneGroupsAndPlacedStones = (orphanedStoneGroupNumber, deadStones) => {
-  store.dispatch(deleteStoneGroup({ stoneGroup: orphanedStoneGroupNumber }));
-  for (let stoneID of deadStones) store.dispatch(deletePlacedStone({ indices: stoneID }));
+  gobanStore.dispatch(deleteStoneGroup({ stoneGroup: orphanedStoneGroupNumber }));
+  for (let stoneID of deadStones) gobanStore.dispatch(deletePlacedStone({ indices: stoneID }));
 }
 
 let replaceDeadStonesWithAdj = (deadStones, capturingStoneIndices) => {
-  let adjMap = store.getState().gamePlay.adjMap;
+  let adjMap = gobanStore.getState().gamePlay.adjMap;
 
   for (let deadStone of deadStones) {
     console.log(deadStone);
@@ -70,7 +70,7 @@ let replaceDeadStonesWithAdj = (deadStones, capturingStoneIndices) => {
     document.querySelector('#clickSquare_' + deadStone + ' svg').style.opacity = '0.7';
     if (adjArr.length > 0) adjMap.setAdj(deadStone, adjArr);
   }
-  store.dispatch(updateAdj({ adjMap }));
+  gobanStore.dispatch(updateAdj({ adjMap }));
 }
 
 export default capturable;

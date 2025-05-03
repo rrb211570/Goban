@@ -36,7 +36,7 @@ let placeable = (rootIndices) => {
   }
   console.log(log);
   addNeighborIndicesOfPlacedStone(rootIndices);
-  if (store.getState().gamePlay.adjMap.hasAdj(rootIndices)) store.dispatch(deleteAdj({ indices: rootIndices }));
+  if (gobanStore.getState().gamePlay.adjMap.hasAdj(rootIndices)) gobanStore.dispatch(deleteAdj({ indices: rootIndices }));
   return true;
 }
 
@@ -52,7 +52,7 @@ let hasExposedNeighbor = (rootIndices) => {
 }
 
 let exposed = (sameColorNeighborGroup, rootIndices) => {
-  let adjMap = store.getState().gamePlay.adjMap;
+  let adjMap = gobanStore.getState().gamePlay.adjMap;
   for (let [indices, adjArr] of adjMap.getAdjEntries()) {
     if (indices != rootIndices && adjArr.includes(sameColorNeighborGroup)) { // we ignore rootIndices b/c we are checking for outward exposure, not inward
       console.log('exposed: ' + sameColorNeighborGroup);
@@ -63,8 +63,8 @@ let exposed = (sameColorNeighborGroup, rootIndices) => {
 }
 
 let addNeighborIndicesOfPlacedStone = (rootIndices) => {
-  let placedStones = store.getState().gamePlay.placedStones;
-  let adjMap = store.getState().gamePlay.adjMap;
+  let placedStones = gobanStore.getState().gamePlay.placedStones;
+  let adjMap = gobanStore.getState().gamePlay.adjMap;
   for (let neighborIndices of getAllNeighborIndices(rootIndices)) {
     if (!placedStones.includes(neighborIndices)) {
       let neighborGroups = getNeighborGroups(neighborIndices);
@@ -72,7 +72,7 @@ let addNeighborIndicesOfPlacedStone = (rootIndices) => {
       if(neighborGroups.length>0) adjMap.setAdj(neighborIndices, neighborGroups);
     }
   }
-  store.dispatch(updateAdj({ adjMap }));
+  gobanStore.dispatch(updateAdj({ adjMap }));
 }
 
 export default placeable;
