@@ -1,16 +1,15 @@
 import './Goban.css';
 import { useEffect, useState } from 'react';
 import placeable from './data/gameInteraction/placement/placement.js';
-import { swapTurn, addPlacedStone, deletePlacedStone } from './store/reducers/gamePlaySlice.js'
+import { swapTurn, saveSnapshot, addPlacedStone, deletePlacedStone } from './store/reducers/gamePlaySlice.js'
 import { gobanStore } from './store/store.js';
-import { useSelector } from 'react-redux';
 // import turn, playerColor, boardLength from store
 
 function Goban({ playground }) {
     const [clickSquares, setClickSquares] = useState([<div id='filler' key='1'></div>]);
     const [overlayElements, setOverlayElements] = useState([]);
     const [currentTurn, setCurrentTurn] = useState(true) // initialize with playerColor==turn (server-side session state)
-    
+
     useEffect(() => {
         let boardLength = gobanStore.getState().gamePlay.boardLength;
         console.log(boardLength);
@@ -36,6 +35,7 @@ function Goban({ playground }) {
         let stoneGroups = gobanStore.getState().gamePlay.stoneGroups;
         let adjMap = gobanStore.getState().gamePlay.adjMap;
         let overlay = [];
+        console.log(stoneGroups);
         // Add stone group numbers in neon pink
         for (let [groupNumber, stones] of stoneGroups.getStoneGroupEntries()) {
             stones.forEach((stone) => {
@@ -87,14 +87,18 @@ function Goban({ playground }) {
         let turn = gobanStore.getState().gamePlay.turn;
         let clickSquareID = e.currentTarget.id;
         let indices = /^.*(\d+).*(\d+)$/.exec(clickSquareID).slice(1, 3).join('_');
+        console.log('showStone(): '+indices);
         if (!stoneExists(indices)) {
+            console.log('showing stone: '+clickSquareID);
             if (turn == 'white') document.querySelector('#' + clickSquareID + ' use').setAttribute('href', '#plain-white-14.5-2');
             else document.querySelector('#' + clickSquareID + ' use').setAttribute('href', '#plain-black-14.5-3');
+            if(recoveredDeadStone(indices)) document.querySelector('#' + e.currentTarget.id +  ' svg').style.opacity = '1';
             document.querySelector('#' + e.currentTarget.id + ' svg').style.display = 'block';
         }
     }
 
     let hideStone = (e) => {
+        console.log('hideStone');
         let clickSquareID = e.currentTarget.id;
         let indices = /^.*(\d+).*(\d+)$/.exec(clickSquareID).slice(1, 3).join('_');
         if (!stoneExists(indices)) {
@@ -112,6 +116,7 @@ function Goban({ playground }) {
                 document.querySelector('#clickSquare_' + rootIndices + ' svg').display = 'block';
                 document.querySelector('#clickSquare_' + rootIndices + ' svg').style.opacity = '1';
                 gobanStore.dispatch(swapTurn());
+                gobanStore.dispatch(saveSnapshot());
                 console.log('placed');
                 // update loadedSGFContent, send to server along with this placed move
             } else {
@@ -136,8 +141,15 @@ function Goban({ playground }) {
     }
 
     let stoneExists = (indices) => {
+        console.log('stoneExists()');
         let placedStones = gobanStore.getState().gamePlay.placedStones;
         return placedStones.includes(indices);
+    }
+
+    let recoveredDeadStone = (indices) => {
+        console.log('recoveredDeadStone()');
+        let deadStones = gobanStore.getState().gamePlay.history[gobanStore.getState().gamePlay.historyIndex].deadStones;
+        return deadStones.includes(indices);
     }
 
     return (

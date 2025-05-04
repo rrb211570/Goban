@@ -1,5 +1,5 @@
 import { gobanStore } from "../../../../store/store";
-import { deleteStoneGroup, deletePlacedStone, updateAdj } from "../../../../store/reducers/gamePlaySlice";
+import { storeDeadStones, deleteStoneGroup, deletePlacedStone, updateAdj } from "../../../../store/reducers/gamePlaySlice";
 import { getNeighborStones, getStoneGroupFromStone } from "./helpers";
 
 let capturable = (capturingStoneIndices) => {
@@ -13,6 +13,7 @@ let capturable = (capturingStoneIndices) => {
       console.log(stoneGroups);
       console.log(gobanStore.getState().gamePlay.placedStones);
       replaceDeadStonesWithAdj(deadStones, capturingStoneIndices);
+      gobanStore.dispatch(storeDeadStones({deadStones}));
     }
     return true;
   }
@@ -59,7 +60,8 @@ let replaceDeadStonesWithAdj = (deadStones, capturingStoneIndices) => {
     let neighborStones = getNeighborStones(deadStone);
     document.querySelector('#clickSquare_' + deadStone + ' svg').style.display = 'none';
     document.querySelector('#clickSquare_' + deadStone + ' svg').style.opacity = '0.7';
-    if (neighborStones.includes(capturingStoneIndices)) continue; // we ignore this case, because capturingStoneIndices has not been updated yet in stoneGroups & adjMap
+    // we ignore this case, b/c addNeighborIndicesOfPlacedStone takes care of it
+    if (neighborStones.includes(capturingStoneIndices)) continue;
 
     for (let neighborStone of neighborStones) {
       let groupNumber = getStoneGroupFromStone(neighborStone);
